@@ -6,10 +6,11 @@ Currently these features are implemented:
 - type_traits
   - support for move and forward
 - memory
-  - unique_ptr
+  - unique_ptr (SFINAE for array types not implemented)
 - functional
   - simple_function which is less smart than std::function. It can bind function pointers, lambdas and
     functors. In its current state it is allocated and does not feature SVO. So use carefully.
+- array
 
 # Usage
 With visual micro:
