@@ -5,8 +5,9 @@ a feature, that I just don't want to miss, I am going to implement it here.
 Currently these features are implemented:
 - type_traits
   - support for move and forward
+  - enable_if and conditional with a few types
 - memory
-  - unique_ptr (SFINAE for array types not implemented)
+  - unique_ptr (no allocator, use with array types blocked)
 - functional
   - simple_function which is less smart than std::function. It can bind function pointers, lambdas and
     functors. In its current state it is allocated and does not feature SVO. So use carefully.
