@@ -1,5 +1,6 @@
 #pragma once
 #include "type_traits.h"
+#include "memory.h"
 
 namespace astd
 {

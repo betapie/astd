@@ -84,6 +84,9 @@ namespace astd
 	};
 
 	template <typename T>
+	using remove_reference_t = typename remove_reference<T>::type;
+
+	template <typename T>
 	constexpr T&& forward(typename remove_reference<T>::type& t)
 	{
 		return static_cast<T&&>(t);
@@ -94,9 +97,6 @@ namespace astd
 	{
 		return static_cast<T&&>(t);
 	}
-
-	template <typename T>
-	using remove_reference_t = typename remove_reference<T>::type;
 
 	template <typename T>
 	constexpr remove_reference_t<T>&& move(T&& object) noexcept
