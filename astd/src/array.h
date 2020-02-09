@@ -6,10 +6,10 @@ namespace astd
 	TODOs:
 	Change iterator type when implemented + reverse Iterator
 	Implement Swap
-	implementation for _Size = 0
+	implementation for _size = 0
 	*/
 
-	template<typename T, size_t _Size>
+	template<typename T, size_t _size>
 	struct array
 	{
 		using value_type = T;
@@ -23,13 +23,13 @@ namespace astd
 
 		void fill(const T& val) // TODO can this be done at compile time?
 		{
-			memset(m_data, val, sizeof(T) * _Size);
+			memset(m_data, val, sizeof(T) * _size);
 		}
 
 		[[nodiscard]] inline T& at(size_t idx)
 		{
 #ifdef HardwareSerial_h
-			if (Serial)
+			if (idx >= _size && Serial)
 				Serial.println("array subscript out of range");
 #endif
 			return m_data[idx];
@@ -38,7 +38,7 @@ namespace astd
 		[[nodiscard]] constexpr const T& at(size_t idx) const
 		{
 #ifdef HardwareSerial_h
-			if (Serial)
+			if (idx >= _size && Serial)
 				Serial.println("array subscript out of range");
 #endif
 			return m_data[idx];
@@ -66,12 +66,12 @@ namespace astd
 
 		[[nodiscard]] inline T& back() noexcept
 		{
-			return m_data[_Size - 1];
+			return m_data[_size - 1];
 		}
 
 		[[nodiscard]] constexpr const T& back() const noexcept
 		{
-			return m_data[_Size - 1];
+			return m_data[_size - 1];
 		}
 
 		[[nodiscard]] inline T* data() noexcept
@@ -96,12 +96,12 @@ namespace astd
 
 		[[nodiscard]] inline iterator end() noexcept
 		{
-			return m_data + _Size;
+			return m_data + _size;
 		}
 
 		[[nodiscard]] inline const_iterator end() const noexcept
 		{
-			return m_data + _Size;
+			return m_data + _size;
 		}
 
 		[[nodiscard]] inline const_iterator cbegin() const noexcept
@@ -111,17 +111,17 @@ namespace astd
 
 		[[nodiscard]] inline const_iterator cend() const noexcept
 		{
-			return m_data + _Size;
+			return m_data + _size;
 		}
 
 		[[nodiscard]] constexpr size_type size() const noexcept
 		{
-			return _Size;
+			return _size;
 		}
 
 		[[nodiscard]] constexpr size_type max_size() const noexcept
 		{
-			return _Size;
+			return _size;
 		}
 
 		[[nodiscard]] constexpr bool empty() const noexcept
@@ -129,34 +129,34 @@ namespace astd
 			return false;
 		}
 
-		T m_data[_Size];
+		T m_data[_size];
 	};
 
-	template<size_t idx, typename T, size_t _Size>
-	[[nodiscard]] constexpr T& get(array<T, _Size>& arr) noexcept
+	template<size_t idx, typename T, size_t _size>
+	[[nodiscard]] constexpr T& get(array<T, _size>& arr) noexcept
 	{
-		static_assert(idx < _Size, "array index out of bounds");
+		static_assert(idx < _size, "array index out of bounds");
 		return arr.m_data[idx];
 	}
 
-	template<size_t idx, typename T, size_t _Size>
-	[[nodiscard]] constexpr const T& get(const array<T, _Size>& arr) noexcept
+	template<size_t idx, typename T, size_t _size>
+	[[nodiscard]] constexpr const T& get(const array<T, _size>& arr) noexcept
 	{
-		static_assert(idx < _Size, "array index out of bounds");
+		static_assert(idx < _size, "array index out of bounds");
 		return arr.m_data[idx];
 	}
 
-	template<size_t idx, typename T, size_t _Size>
-	[[nodiscard]] constexpr T&& get(array<T, _Size>&& arr) noexcept
+	template<size_t idx, typename T, size_t _size>
+	[[nodiscard]] constexpr T&& get(array<T, _size>&& arr) noexcept
 	{
-		static_assert(idx < _Size, "array index out of bounds");
+		static_assert(idx < _size, "array index out of bounds");
 		return move(arr.m_data[idx]);
 	}
 
-	template<size_t idx, typename T, size_t _Size>
-	[[nodiscard]] constexpr const T&& get(const array<T, _Size>&& arr) noexcept
+	template<size_t idx, typename T, size_t _size>
+	[[nodiscard]] constexpr const T&& get(const array<T, _size>&& arr) noexcept
 	{
-		static_assert(idx < _Size, "array index out of bounds");
+		static_assert(idx < _size, "array index out of bounds");
 		return move(arr.m_data[idx]);
 	}
 }

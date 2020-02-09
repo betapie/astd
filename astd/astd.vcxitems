@@ -16,10 +16,6 @@
   <ItemGroup>
     <Text Include="$(MSBuildThisFileDirectory)readme.txt" />
     <Text Include="$(MSBuildThisFileDirectory)library.properties" />
-    <Text Include="$(MSBuildThisFileDirectory)src\astd.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="$(MSBuildThisFileDirectory)src\astd.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)src\array.h" />
@@ -27,6 +23,5 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)src\functional.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\memory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\type_traits.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)src\xstddef.h" />
   </ItemGroup>
 </Project>

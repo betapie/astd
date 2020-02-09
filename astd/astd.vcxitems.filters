@@ -11,16 +11,8 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(MSBuildThisFileDirectory)src\astd.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
     <Text Include="$(MSBuildThisFileDirectory)readme.txt" />
     <Text Include="$(MSBuildThisFileDirectory)library.properties" />
-    <Text Include="$(MSBuildThisFileDirectory)src\astd.h">
-      <Filter>Header Files</Filter>
-    </Text>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)src\memory.h">
@@ -33,9 +25,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)src\functional.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)src\xstddef.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)src\array.h">
