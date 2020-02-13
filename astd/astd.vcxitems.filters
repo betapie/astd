@@ -30,5 +30,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)src\array.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\bitset.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

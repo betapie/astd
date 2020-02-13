@@ -2,5 +2,5 @@
 
 namespace astd
 {
-	using nullptr_t = decltype(nullptr);
+    using nullptr_t = decltype(nullptr);
 }
