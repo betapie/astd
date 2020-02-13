@@ -12,6 +12,7 @@ Currently these features are implemented:
   - simple_function which is less smart than std::function. It can bind function pointers, lambdas and
     functors. In its current state it is allocated and does not feature SVO. So use carefully.
 - array
+- bitset
 
 # Usage
 With visual micro:
