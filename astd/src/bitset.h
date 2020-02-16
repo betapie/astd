@@ -1,5 +1,26 @@
 #pragma once
+#include <cassert>
 #include "type_traits.h"
+#include "error.h"
+
+/*
+TODOS
+Constructors from string
+
+to_string
+to_ulong
+to_ullong
+
+Non Members:
+operator&
+operator|
+operator^
+operator<<
+operator>>
+
+helpers:
+std::hash
+*/
 
 namespace
 {
@@ -108,20 +129,23 @@ namespace astd
 
         [[nodiscard]] constexpr bool operator[](size_t idx) const
         {
+#if _DEBUG
+            verify(idx < _size, "bitset subscript out of range");
+#endif
             return subscr_impl(idx);
         }
 
         [[nodiscard]] reference operator[](size_t idx)
         {
+#if _DEBUG
+            verify(idx < _size, "bitset subscript out of range");
+#endif
             return reference(*this, idx);
         }
 
         [[nodiscard]] bool test(size_t idx) const
         {
-#ifdef HardwareSerial_h
-            if (idx >= _size && Serial)
-                Serial.println("bitset subscript out of range");
-#endif
+            verify(idx < _size, "invalid bitset index");
             return subscr_impl(idx);
         }
 
@@ -256,7 +280,7 @@ namespace astd
 
         bitset& set(size_t idx, bool value = true)
         {
-            // TODO idx out of range
+            verify(idx < _size, "invalid bitset index")
             set_impl(idx, value);
             return *this;
         }
@@ -269,12 +293,12 @@ namespace astd
 
         bitset& reset(size_t idx)
         {
-            // TODO idx out of range
+            verify(idx < _size, "invalid bitset index"
             set_impl(idx, false);
             return *this;
         }
 
-        bitset& flip()
+        bitset& flip() noexcept
         {
             for (size_t dataIdx = 0; dataIdx < s_arrSize; ++dataIdx)
                 m_data[dataIdx] = ~m_data[dataIdx];
@@ -284,7 +308,7 @@ namespace astd
 
         bitset& flip(size_t idx)
         {
-            // TODO idx out of range
+            verify(idx < _size, "invalid bitset index"
             flip_impl(idx);
             return *this;
         }

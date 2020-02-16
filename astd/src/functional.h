@@ -77,6 +77,11 @@ namespace astd
                 return m_pInvocable->Invoke(forward<Args...>(args...));
         }
 
+        explicit operator bool() const
+        {
+            return !!m_pInvocable;
+        }
+
     private:
         unique_ptr<invocable_base<return_type, Args...>> m_pInvocable = nullptr;
     };

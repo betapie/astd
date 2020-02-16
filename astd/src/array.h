@@ -1,4 +1,5 @@
 #pragma once
+#include "error.h"
 
 namespace astd
 {
@@ -32,29 +33,29 @@ namespace astd
 
         [[nodiscard]] inline T& at(size_t idx)
         {
-#ifdef HardwareSerial_h
-            if (idx >= _size && Serial)
-                Serial.println("array subscript out of range");
-#endif
+            verify(idx < _size, "invalid array index");
             return m_data[idx];
         }
 
         [[nodiscard]] constexpr const T& at(size_t idx) const
         {
-#ifdef HardwareSerial_h
-            if (idx >= _size && Serial)
-                Serial.println("array subscript out of range");
-#endif
+            verify(idx < _size, "invalid array index");
             return m_data[idx];
         }
 
         [[nodiscard]] inline T& operator[](size_t idx) noexcept
         {
+#if _DEBUG
+            verify(idx < _size, "array subscription out of range");
+#endif
             return m_data[idx];
         }
 
         [[nodiscard]] constexpr const T& operator[](size_t idx) const noexcept
         {
+#if _DEBUG
+            verify(idx < _size, "array subscription out of range");
+#endif
             return m_data[idx];
         }
 

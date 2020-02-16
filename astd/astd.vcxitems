@@ -21,6 +21,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)src\array.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\bitset.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\cstddef.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\error.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\functional.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\memory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\type_traits.h" />

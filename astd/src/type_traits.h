@@ -2,6 +2,7 @@
 
 namespace astd
 {
+    // types
     template<typename T, T val>
     struct integral_constant
     {
@@ -27,6 +28,7 @@ namespace astd
     using true_type = bool_constant<true>;
     using false_type = bool_constant<false>;
 
+    // SFINAE tools
     template<bool _test, typename T = void>
     struct enable_if
     {};
@@ -52,7 +54,7 @@ namespace astd
         using type = U;
     };
 
-    // compile time type checks
+    // type traits
     template<typename T, typename U>
     struct is_same : false_type
     {};
@@ -73,6 +75,7 @@ namespace astd
     struct is_array<T[_size]> : true_type
     {};
 
+    //type mutations
     template <typename T>
     struct remove_reference
     {
