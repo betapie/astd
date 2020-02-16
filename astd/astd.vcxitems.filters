@@ -36,5 +36,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)src\error.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\stringdef.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

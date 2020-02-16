@@ -1,4 +1,7 @@
 #pragma once
+#ifndef ASTD_FUNCTIONAL
+#define ASTD_FUNCTIONAL
+
 #include "type_traits.h"
 #include "memory.h"
 
@@ -86,3 +89,5 @@ namespace astd
         unique_ptr<invocable_base<return_type, Args...>> m_pInvocable = nullptr;
     };
 }
+
+#endif // ASTD_FUNCTIONAL

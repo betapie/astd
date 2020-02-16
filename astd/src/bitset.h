@@ -1,25 +1,23 @@
 #pragma once
-#include <cassert>
+#ifndef ASTD_BITSET
+#define ASTD_BITSET
+#include "WString.h" // using the avr String class
 #include "type_traits.h"
+#include "stringdef.h"
 #include "error.h"
 
 /*
 TODOS
-Constructors from string
 
-to_string
-to_ulong
-to_ullong
+Replace if constexpr conditions with template magic for __cplusplus < 201703L
+
 
 Non Members:
-operator&
-operator|
-operator^
-operator<<
+operator<<      Not useful yet because no streams
 operator>>
 
 helpers:
-std::hash
+std::hash       Not useful yet because no hash
 */
 
 namespace
@@ -120,6 +118,55 @@ namespace astd
             }
 
             sanatize_trail();
+        }
+
+        // just to fulfill the API you should probably not use this. Prefer the char* overload
+        bitset(const String& str,
+            string::size_type pos = 0,
+            string::size_type len = string::npos,
+            string::value_type c0 = '0',
+            string::value_type c1 = '1')
+        {
+            verify(str.length() > pos, "Invalid bitset index");
+            if (str.length() - pos < len) // Trim len, also for npos
+                len = str.length() - pos;
+
+            reset(); // Reset here and fill with true string elements to avoid
+                     // having to sanatize the trail or floating data
+
+            auto it = str.begin() + pos;
+            const auto end = it + len;
+
+            for (size_t idx = 0; it < end && idx < _size; ++idx, ++it)
+            {
+                const auto curChar = *it;
+                if (curChar == c1) // I don't see any point for char_traits::eq when using avr String class
+                    set_impl(idx, true);
+                else
+                    verify(curChar == c0, "Invalid char in string for bitset");
+            }
+        }
+
+        bitset(const char* pChar,
+            string::size_type len = string::npos,
+            string::value_type c0 = '0',
+            string::value_type c1 = '1')
+        {
+            reset(); // Reset here and fill with true string elements to avoid
+                     // having to sanatize the trail or floating data
+
+            auto it = pChar;
+            auto maxLen = min(_size, len); // TODO replace with astd::min when done
+            for (size_t idx = 0; idx < maxLen; ++idx, ++it)
+            {
+                const auto curChar = *it;
+                if (curChar == '\0')
+                    break;
+                else if (curChar == c1)
+                    set_impl(idx, true);
+                else
+                    verify(curChar == c0, "Invalid char in string for bitset");
+            }
         }
 
         [[nodiscard]] bool operator==(const bitset<_size>& other) const noexcept
@@ -273,27 +320,27 @@ namespace astd
 
         bitset& set() noexcept
         {
-            memset(m_data, 0xFF, sizeof(m_data) * s_arrSize);
+            memset(m_data, 0xFF, sizeof(base_type) * s_arrSize);
             sanatize_trail();
             return *this;
         }
 
         bitset& set(size_t idx, bool value = true)
         {
-            verify(idx < _size, "invalid bitset index")
+            verify(idx < _size, "invalid bitset index");
             set_impl(idx, value);
             return *this;
         }
 
         bitset& reset() noexcept
         {
-            memset(m_data, 0x00, sizeof(m_data) * s_arrSize);
+            memset(m_data, 0x00, sizeof(base_type) * s_arrSize);
             return *this;
         }
 
         bitset& reset(size_t idx)
         {
-            verify(idx < _size, "invalid bitset index"
+            verify(idx < _size, "invalid bitset index");
             set_impl(idx, false);
             return *this;
         }
@@ -308,9 +355,96 @@ namespace astd
 
         bitset& flip(size_t idx)
         {
-            verify(idx < _size, "invalid bitset index"
+            verify(idx < _size, "invalid bitset index");
             flip_impl(idx);
             return *this;
+        }
+
+        String to_string(string::value_type c0 = '0', string::value_type c1 = '1') const
+        {
+            String ret;
+            verify(ret.reserve(_size + 1) > 0, "bitset::to_string could not allocate");
+
+            for (size_t idx = 0; idx < _size; ++idx)
+            {
+                ret.concat(subscr_impl(idx) ? c1 : c0);
+            }
+            return ret;
+        }
+
+        unsigned long to_ulong() const
+        {
+            if (_size == 0)
+                return 0;
+
+            if constexpr (is_same<base_type, unsigned long>::value)
+            {
+                if constexpr (_size <= sizeof(unsigned long) * 8)
+                    return m_data[0];
+                else // check whether any higher bits are nonzero
+                {
+                    for (size_t dataIdx = 1; dataIdx < s_arrSize; ++dataIdx)
+                        verify(m_data[dataIdx] == static_cast<base_type>(0), "bitset overflow in to_ulong");
+                    return m_data[0];
+                }
+            }
+            else // base_type == unsigned long long
+            {
+                if constexpr (_size <= sizeof(unsigned long) * 8)
+                    return static_cast<unsigned long>(m_data[0]);
+                else
+                {
+                    verify(m_data[0] & (static_cast<base_type>(-1) << sizeof(base_type)) == 0, "bitset overflow in to_ulong");
+                    for (size_t dataIdx = 1; dataIdx < s_arrSize; ++dataIdx)
+                        verify(m_data[dataIdx] == static_cast<base_type>(0), "bitset overflow in to_ulong");
+                    return static_cast<unsigned long>(m_data[0]);
+                }
+
+            }
+        }
+
+        unsigned long long to_ullong() const
+        {
+            if (_size == 0)
+                return 0;
+
+            if constexpr (is_same<base_type, unsigned long long>::value)
+            {
+                if constexpr (_size <= sizeof(unsigned long long) * 8)
+                    return m_data[0];
+                else // check whether any higher bits are nonzero
+                {
+                    for (size_t dataIdx = 0; dataIdx < s_arrSize; ++dataIdx)
+                        verify(m_data[dataIdx] == static_cast<base_type>(0), "bitset overflow in to_ulong");
+                    return m_data[0];
+                }
+            }
+            else // base_type == unsigned long
+            {
+                constexpr auto numToCheck = 1 + ((sizeof(unsigned long long) - sizeof(base_type)) / sizeof(base_type)); // beware of overflow
+                if constexpr (_size <= sizeof(unsigned long long) * 8)
+                {
+                    unsigned long long ret = 0;
+
+                    for (size_t dataIdx = 0; dataIdx < min(numToCheck, s_arrSize); ++dataIdx)
+                        ret |= m_data[dataIdx] << (sizeof(base_type) * 8) * dataIdx;
+
+                    return ret;
+                }
+                else
+                {
+                    for (size_t dataIdx = 1; dataIdx < s_arrSize; ++dataIdx)
+                        verify(m_data[dataIdx] == static_cast<base_type>(0), "bitset overflow in to_ulong");
+                    
+                    unsigned long long ret = 0;
+
+                    for (size_t dataIdx = 0; dataIdx < min(numToCheck, s_arrSize); ++dataIdx)
+                        ret |= m_data[dataIdx] << (sizeof(base_type) * 8);
+
+                    return ret;
+                }
+
+            }
         }
 
     private:
@@ -342,4 +476,28 @@ namespace astd
 
         base_type m_data[s_arrSize];
     };
+
+
+    template<size_t _size>
+    bitset<_size> operator&(const bitset<_size>& lhs, const bitset<_size>& rhs) noexcept
+    {
+        bitset<_size> ret = lhs;
+        return ret & rhs;
+    }
+
+    template<size_t _size>
+    bitset<_size> operator|(const bitset<_size>& lhs, const bitset<_size>& rhs) noexcept
+    {
+        bitset<_size> ret = lhs;
+        return ret | rhs;
+    }
+
+    template<size_t _size>
+    bitset<_size> operator^(const bitset<_size>& lhs, const bitset<_size>& rhs) noexcept
+    {
+
+        bitset<_size> ret = lhs;
+        return ret ^ rhs;
+    }
 }
+#endif // ASTD_BITSET

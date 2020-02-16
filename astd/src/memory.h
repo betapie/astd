@@ -1,4 +1,7 @@
 #pragma once
+#ifndef ASTD_MEMORY
+#define ASTD_MEMORY
+
 #include "cstddef.h"
 #include "type_traits.h"
 
@@ -81,3 +84,5 @@ namespace astd
         return unique_ptr<T>(new T(forward<Args>(args)...));
     }
 }
+
+#endif // ASTD_MEMORY

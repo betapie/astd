@@ -1,4 +1,6 @@
 #pragma once
+#ifndef ASTD_ARRAY
+#define ASTD_ARRAY
 #include "error.h"
 
 namespace astd
@@ -165,3 +167,4 @@ namespace astd
         return move(arr.m_data[idx]);
     }
 }
+#endif //ASTD_ARRAY

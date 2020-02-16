@@ -24,6 +24,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)src\error.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\functional.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\memory.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\stringdef.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\type_traits.h" />
   </ItemGroup>
 </Project>

@@ -1,4 +1,6 @@
 #pragma once
+#ifndef ASTD_TYPETRAITS
+#define ASTD_TYPETRAITS
 
 namespace astd
 {
@@ -115,3 +117,5 @@ namespace astd
         return static_cast<remove_reference_t<T>&&>(object);
     }
 }
+
+#endif // ASTD_TYPETRAITS
