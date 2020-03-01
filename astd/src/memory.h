@@ -7,7 +7,7 @@
 
 namespace astd
 {
-    template <typename T, enable_if_t<!is_array<T>::value, int> = 0>
+    template<typename T, enable_if_t<!is_array<T>::value, int> = 0>
     class unique_ptr
     {
     public:
@@ -78,7 +78,7 @@ namespace astd
         T* m_pObject = nullptr;
     };
 
-    template <typename T, typename... Args>
+    template<typename T, typename... Args>
     unique_ptr<T> make_unique(Args... args)
     {
         return unique_ptr<T>(new T(forward<Args>(args)...));

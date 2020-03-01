@@ -7,7 +7,7 @@
 
 namespace astd
 {
-    template <typename return_type, typename... Args>
+    template<typename return_type, typename... Args>
     class invocable_base
     {
     public:
@@ -36,7 +36,7 @@ namespace astd
         T m_t;
     };
 
-    template <typename>
+    template<typename>
     class simple_function;
 
     template<typename return_type, typename... Args>
