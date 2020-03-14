@@ -75,6 +75,21 @@ namespace astd
     template<typename T, typename... Ts>
     constexpr auto conjuction_v = conjunction<T, Ts...>::value;
 
+    template<typename...>
+    struct disjunction : false_type
+    {};
+
+    template<typename T>
+    struct disjunction<T> : T
+    {};
+
+    template<typename T, typename... Ts>
+    struct disjunction<T, Ts...> : conditional_t<bool(T::value), T, disjunction<Ts...>>
+    {};
+
+    template<typename T, typename... Ts>
+    constexpr auto disjunction_v = disjunction<T, Ts...>::value;
+
     template<typename T, typename = void>
     struct add_lvalue_reference_impl
     {
@@ -308,6 +323,28 @@ namespace astd
 
     template<typename T>
     using remove_cv_t = typename remove_cv<T>::type;
+
+    template<typename T>
+    struct is_void : is_same<void, typename remove_cv_t<T>>
+    {};
+
+    template<typename T>
+    constexpr auto is_void_v = is_void<T>::value;
+
+    template<typename, typename From, typename To>
+    struct is_nonvoid_convertible_impl : false_type
+    {};
+
+    template<typename From, typename To>
+    struct is_nonvoid_convertible_impl<void_t<decltype(declval<void(&)(To)>()(declval<From>()))>, From, To> : true_type
+    {};
+
+    template<typename From, typename To>
+    struct is_convertible : disjunction<is_nonvoid_convertible_impl<void_t<>, From, To>, conjunction<is_void<From>, is_void<To>>>
+    {};
+
+    template<typename From, typename To>
+    constexpr auto is_convertible_v = is_convertible<From, To>::value;
 
     template<typename T>
     struct remove_reference
