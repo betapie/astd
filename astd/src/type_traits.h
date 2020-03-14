@@ -193,21 +193,6 @@ namespace astd
     template<typename T>
     constexpr auto is_move_assignable_v = is_move_assignable<T>::value;
 
-    template<typename, typename From, typename To>
-    struct is_convertible_impl : false_type
-    {};
-
-    // I am not sure if this is standard conform, but this will have to do for the moment
-    template<typename From, typename To>
-    struct is_convertible_impl<void_t<decltype((To)declval<From>())>, From, To> : true_type
-    {};
-
-    template<typename From, typename To>
-    using is_convertible = is_convertible_impl<void_t<>, From, To>;
-
-    template<typename From, typename To>
-    constexpr auto is_convertible_v = is_convertible<From, To>::value;
-
     template<typename T, typename U>
     struct is_same : false_type
     {};
@@ -325,7 +310,7 @@ namespace astd
     using remove_cv_t = typename remove_cv<T>::type;
 
     template<typename T>
-    struct is_void : is_same<void, typename remove_cv_t<T>>
+    struct is_void : is_same<void, remove_cv_t<T>>
     {};
 
     template<typename T>
