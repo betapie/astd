@@ -9,7 +9,7 @@ Currently these features are implemented:
 - utility
   - pair
 - memory
-  - unique_ptr (no allocator, use with array types blocked)
+  - unique_ptr for non-array types
 - functional
   - simple_function which is less smart than std::function. It can bind function pointers, lambdas and
     functors. In its current state it is allocated and does not feature SVO. So use carefully.
