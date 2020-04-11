@@ -7,75 +7,195 @@
 
 namespace astd
 {
-    template<typename T, enable_if_t<!is_array<T>::value, int> = 0>
-    class unique_ptr
+    template<typename T>
+    struct default_delete
     {
-    public:
-        unique_ptr()
+        constexpr default_delete() noexcept = default;
+
+        template<typename U, enable_if_t<is_convertible_v<T*, U*>, int> = 0>
+        default_delete(const default_delete<U>& other) noexcept
         {}
 
-        unique_ptr(T* ptr)
-            :m_pObject(ptr)
+        void operator()(T* ptr) const
+        {
+            // TODO check for complete type
+            delete ptr;
+        }        
+    };
+
+    template<typename T>
+    struct default_delete<T[]>
+    {
+        constexpr default_delete() noexcept = default;
+
+        template<typename U, enable_if_t<is_convertible_v<T(*)[], U(*)[]>, int> = 0>
+        default_delete(const default_delete<U>& other) noexcept
         {}
+
+        void operator()(T* ptr) const
+        {
+            // TODO check for complete type
+            delete[] ptr;
+        }
+    };
+
+    template<typename T, typename Deleter = default_delete<T>>
+    class unique_ptr
+    {
+    private:
+        template<typename U, typename V, typename = void>
+        struct _ptr_type_impl
+        {
+            using type = U*;
+        };
+
+        template<typename U, typename V>
+        struct _ptr_type_impl<U, V, void_t<typename remove_reference_t<V>::pointer>>
+        {
+            using type = typename remove_reference_t<V>::pointer;
+        };
+
+    public:
+        using pointer = typename _ptr_type_impl<T, Deleter>::type;
+        using element_type = T;
+        using deleter_type = Deleter;
+
+        template<typename Del = Deleter, enable_if_t<conjunction_v<is_default_constructible<Del>, negation<is_pointer<Del>>>, int> = 0>
+        constexpr unique_ptr() noexcept
+            :m_ptr{}, m_del{}
+        {}
+
+        template<typename Del = Deleter, enable_if_t<conjunction_v<is_default_constructible<Del>, negation<is_pointer<Del>>>, int> = 0>
+        constexpr unique_ptr(nullptr_t) noexcept
+            :m_ptr{}, m_del{}
+        {}
+
+        template<typename Del = Deleter, enable_if_t<conjunction_v<is_default_constructible<Del>, negation<is_pointer<Del>>>, int> = 0>
+        explicit unique_ptr(pointer ptr) noexcept
+            :m_ptr(ptr), m_del{}
+        {}
+
+        template<typename Del = deleter_type, enable_if_t<is_copy_constructible_v<Del>, int> = 0>
+        unique_ptr(pointer ptr, const Del& del) noexcept
+            :m_ptr(ptr), m_del(del)
+        {}
+
+        template<typename Del = deleter_type, enable_if_t<conjunction_v<negation<is_reference<Del>>, is_move_constructible<Del>>, int> = 0>
+        unique_ptr(pointer ptr, Del&& del)
+            : m_ptr(ptr), m_del(forward<Del>(del))
+        {}
+
+        template<typename Del = deleter_type, enable_if_t<conjunction_v<is_reference<Del>, is_constructible<Del, remove_reference_t<Del>>>, int> = 0>
+        unique_ptr(pointer ptr, Del&& del) = delete;
 
         unique_ptr(const unique_ptr& other) = delete;
         unique_ptr& operator=(const unique_ptr& other) = delete;
 
+        template<typename Del = deleter_type, enable_if_t<is_move_constructible_v<Del>, int> = 0>
         unique_ptr(unique_ptr&& other) noexcept
+            : m_ptr(other.release()), m_del(forward<Del>(other.m_del))
+        {}
+
+        template<typename T2, typename Deleter2,
+            enable_if_t<conjunction_v<        
+                conditional_t<is_reference_v<Deleter2>, is_same<Deleter, Deleter2>, is_convertible<Deleter2, Deleter>>,
+                is_convertible<typename unique_ptr<T2, Deleter>::pointer, pointer>,
+                negation<is_array<T2>>
+            >,
+            int> = 0>
+        unique_ptr(unique_ptr<T2, Deleter2>&& other) noexcept
+            :m_ptr(other.release()), m_del(forward<Deleter2>(other.m_del))
+        {}
+
+        unique_ptr& operator=(nullptr_t)
         {
-            m_pObject = other.m_pObject;
-            other.m_pObject = nullptr;
+            reset();
+            return *this;
         }
 
+        template<typename Del = deleter_type, enable_if_t<is_move_assignable_v<Del>, int> = 0>
         unique_ptr& operator=(unique_ptr&& other) noexcept
         {
             if (this == &other)
                 return *this;
 
-            m_pObject = other.m_pObject;
-            other.m_pObject = nullptr;
+            reset(other.release());
+            m_del = forward<Del>(other.m_del);
             return *this;
         }
 
-        unique_ptr operator=(nullptr_t)
+        template<typename T2, typename Deleter2,
+            enable_if_t<conjunction_v<negation<is_array<T2>>,
+                            is_convertible<typename unique_ptr<T2, Deleter2>::pointer, pointer>,
+                            is_assignable<Deleter&, Deleter2&&>>, int> = 0>
+        unique_ptr& operator=(unique_ptr<T2, Deleter2>&& other)
         {
-            reset();
+            if (this == &other)
+                return *this;
+
+            reset(other.release());
+            m_del = forward<Deleter2>(other.m_del);
+            return *this;
         }
 
         ~unique_ptr()
         {
-            if (m_pObject)
+            if (m_ptr)
             {
-                reset();
+                m_del(m_ptr);
             }
         }
 
-        T* operator->()
+        [[nodiscard]] deleter_type& get_deleter() noexcept
         {
-            return m_pObject;
+            return m_del;
         }
 
-        operator bool() const
+        [[nodiscard]] const deleter_type& get_deleter() const noexcept
         {
-            return m_pObject != nullptr;
+            return m_del;
         }
 
-        void reset()
+        [[nodiscard]] pointer operator->() const noexcept
         {
-            if (m_pObject)
+            return m_ptr;
+        }
+
+        [[nodiscard]] pointer get() const noexcept
+        {
+            return m_ptr;
+        }
+
+        [[nodiscard]] add_lvalue_reference_t<T> operator*() const noexcept
+        {
+            return *m_ptr;
+        }
+
+        explicit operator bool() const noexcept
+        {
+            return m_ptr != nullptr;
+        }
+
+        pointer release() noexcept // TODO replace by std::exchange
+        {
+            const auto retval = m_ptr;
+            m_ptr = nullptr;
+            return retval;
+        }
+
+        void reset( pointer ptr = pointer() )
+        {
+            const auto cur = m_ptr;
+            m_ptr = ptr;
+            if (cur)
             {
-                delete m_pObject;
-                m_pObject = nullptr;
+                m_del(cur);
             }
-        }
-
-        T* get() noexcept
-        {
-            return m_pObject;
         }
 
     private:
-        T* m_pObject = nullptr;
+        T* m_ptr = nullptr;
+        Deleter m_del;
     };
 
     template<typename T, typename... Args>

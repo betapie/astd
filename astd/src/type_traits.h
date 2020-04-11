@@ -73,7 +73,7 @@ namespace astd
     {};
 
     template<typename T, typename... Ts>
-    constexpr auto conjuction_v = conjunction<T, Ts...>::value;
+    constexpr auto conjunction_v = conjunction<T, Ts...>::value;
 
     template<typename...>
     struct disjunction : false_type
@@ -89,6 +89,13 @@ namespace astd
 
     template<typename T, typename... Ts>
     constexpr auto disjunction_v = disjunction<T, Ts...>::value;
+
+    template<typename T>
+    struct negation : bool_constant<!bool(T::value)>
+    {};
+
+    template<typename T>
+    constexpr auto negation_v = negation<T>::value;
 
     template<typename T, typename = void>
     struct add_lvalue_reference_impl
@@ -315,6 +322,21 @@ namespace astd
 
     template<typename T>
     constexpr auto is_void_v = is_void<T>::value;
+
+    template<typename T>
+    struct is_pointer_impl : false_type
+    {};
+
+    template<typename T>
+    struct is_pointer_impl<T*> : true_type
+    {};
+
+    template<typename T>
+    struct is_pointer : is_pointer_impl<remove_cv_t<T>>
+    {};
+
+    template<typename T>
+    constexpr auto is_pointer_t = is_pointer<T>::value;
 
     template<typename, typename From, typename To>
     struct is_nonvoid_convertible_impl : false_type
