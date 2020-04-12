@@ -200,6 +200,38 @@ namespace astd
     template<typename T>
     constexpr auto is_move_assignable_v = is_move_assignable<T>::value;
 
+    // Predeclarations for is_swappable implementations
+    template<typename T, enable_if_t<is_move_constructible_v<T>&& is_move_assignable_v<T>, int> = 0>
+    constexpr void swap(T& lhs, T& rhs) noexcept;
+
+    template<typename T>
+    struct is_swappable;
+
+    template<typename T, size_t _size, enable_if_t<is_swappable<T>::value, int> = 0>
+    constexpr void swap(T(&lhs)[_size], T(&rhs)[_size]);
+
+    template<typename, typename T, typename U>
+    struct _is_swappable_with_impl : false_type
+    {};
+
+    template<typename T, typename U>
+    struct _is_swappable_with_impl<void_t<decltype(swap(declval<T>(), declval<U>()))>, T, U> : true_type
+    {};
+
+    template<typename T, typename U>
+    struct is_swappable_with : bool_constant<_is_swappable_with_impl<void_t<>, T, U>::value && _is_swappable_with_impl<void_t<>, U, T>::value>
+    {};
+
+    template<typename T, typename U>
+    constexpr auto is_swappable_with_v = is_swappable_with<T, U>::value;
+
+    template<typename T>
+    struct is_swappable : is_swappable_with<add_lvalue_reference_t<T>, add_lvalue_reference_t<T>>
+    {};
+
+    template<typename T>
+    constexpr auto is_swappable_v = is_swappable<T>::value;
+
     template<typename T, typename U>
     struct is_same : false_type
     {};

@@ -6,6 +6,33 @@
 
 namespace astd
 {
+    template<typename FwdIt1, typename FwdIt2>
+    constexpr void iter_swap(FwdIt1 lhs, FwdIt2 rhs)
+    {
+        swap(*lhs, *rhs);
+    }
+
+    template<typename T, enable_if_t<is_move_constructible_v<T> && is_move_assignable_v<T>, int> is_enabled>
+    constexpr void swap(T& lhs, T& rhs) noexcept
+    {
+        auto temp = move(lhs);
+        lhs = move(rhs);
+        rhs = move(lhs);
+    }
+
+    template<typename T, size_t _size, enable_if_t<is_swappable<T>::value, int> is_enabled>
+    constexpr void swap(T(&lhs)[_size], T(&rhs)[_size])
+    {
+        if (&lhs == &rhs)
+            return;
+        auto* begin = lhs;
+        const auto* end = begin + _size;
+        for (auto* rbegin = rhs; begin < end; ++begin, ++rbegin)
+        {
+            iter_swap(begin, rbegin);
+        }
+    }
+
     struct _noCopyMove_t
     {
         ~_noCopyMove_t() = delete;
