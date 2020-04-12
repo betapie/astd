@@ -8,11 +8,13 @@ Currently these features are implemented:
 - bitset
 - utility
   - pair
+  - swap
 - memory
-  - unique_ptr for non-array types
+  - unique_ptr
 - functional
   - simple_function which is less smart than std::function. It can bind function pointers, lambdas and
     functors. In its current state it is allocated and does not feature SVO. So use carefully.
+  - less, greater, etc..
 - type_traits
   - as they come along, most useful features for users would include support for move and forward and SFINAE enablers
 
