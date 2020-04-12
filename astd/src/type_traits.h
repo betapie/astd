@@ -317,6 +317,39 @@ namespace astd
     using remove_cv_t = typename remove_cv<T>::type;
 
     template<typename T>
+    struct remove_pointer
+    {
+        using type = T;
+    };
+
+    template<typename T>
+    struct remove_pointer<T*>
+    {
+        using type = T;
+    };
+
+    template<typename T>
+    struct remove_pointer<T* const>
+    {
+        using type = T;
+    };
+
+    template<typename T>
+    struct remove_pointer<T* volatile>
+    {
+        using type = T;
+    };
+
+    template<typename T>
+    struct remove_pointer<T* const volatile>
+    {
+        using type = T;
+    };
+
+    template<typename T>
+    using remove_pointer_t = typename remove_pointer<T>::type;
+
+    template<typename T>
     struct is_void : is_same<void, remove_cv_t<T>>
     {};
 
@@ -426,6 +459,29 @@ namespace astd
 
     template<typename T>
     using decay_t = typename decay<T>::type;
+
+    template<typename T, unsigned dim = 0>
+    struct extent : integral_constant<size_t, 0>
+    {};
+
+    template<typename T>
+    struct extent<T[], 0> : integral_constant<size_t, 0>
+    {};
+
+    template<typename T, unsigned dim>
+    struct extent<T[], dim> : extent<T[], dim - 1>
+    {};
+
+    template<typename T, size_t _size>
+    struct extent<T[_size]> : integral_constant<size_t, _size>
+    {};
+
+    template<typename T, size_t _size, unsigned dim>
+    struct extent<T[_size], dim> : extent<T, dim - 1>
+    {};
+
+    template<typename T, unsigned dim = 0>
+    constexpr auto extent_v = extent<T, dim>::value;
 
     template<typename T>
     constexpr T&& forward(typename remove_reference<T>::type& t)
