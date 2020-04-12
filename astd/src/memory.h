@@ -385,7 +385,7 @@ namespace astd
     };
 
     template<typename T, typename... Args, enable_if_t<!is_array_v<T>, int> = 0>
-    [[nodiscard]] unique_ptr<T> make_unique(Args... args)
+    [[nodiscard]] unique_ptr<T> make_unique(Args&&... args)
     {
         return unique_ptr<T>(new T(forward<Args>(args)...));
     }
@@ -398,6 +398,132 @@ namespace astd
 
     template<typename T, typename... Args, enable_if_t<extent_v<T> != 0, int> = 0>
     unique_ptr<T> make_unique(Args...) = delete;
+
+    template<typename T, enable_if_t<!is_array_v<T>, int> = 0>
+    [[nodiscard]] unique_ptr<T> make_unique_for_overwrite()
+    {
+        return unique_ptr<T>(new T);
+    }
+
+    template<typename T, enable_if_t<is_array_v<T>&& extent_v<T> == 0, int> = 0>
+    [[nodiscard]] unique_ptr<T> make_unique_for_overwrite(size_t size)
+    {
+        unique_ptr<T>(new remove_extent_t<T>[size]());
+    }
+
+    template<typename T, typename... Args, enable_if_t<extent_v<T> != 0, int> = 0>
+    unique_ptr<T> make_unique_for_overwrite(Args&&...) = delete;
+
+    template<typename T, typename Deleter, typename T2, typename Deleter2>
+    bool operator==(const unique_ptr<T, Deleter>& lhs, const unique_ptr<T2, Deleter2>& rhs)
+    {
+        return lhs.get() == rhs.get();
+    }
+
+    template<typename T, typename Deleter, typename T2, typename Deleter2>
+    bool operator!=(const unique_ptr<T, Deleter>& lhs, const unique_ptr<T2, Deleter2>& rhs)
+    {
+        return !(lhs == rhs);
+    }
+
+    template<typename T = void>
+    struct less;
+
+    template<typename T, typename Deleter, typename T2, typename Deleter2>
+    bool operator<(const unique_ptr<T, Deleter>& lhs, const unique_ptr<T2, Deleter2>& rhs)
+    {
+        return less<common_type_t<unique_ptr<T, Deleter>::pointer, unique_ptr<T2, Deleter>::pointer>>()(lhs.get(), rhs.get());
+    }
+
+    template<typename T, typename Deleter, typename T2, typename Deleter2>
+    bool operator<=(const unique_ptr<T, Deleter>& lhs, const unique_ptr<T2, Deleter2>& rhs)
+    {
+        return !(rhs < lhs);
+    }
+
+    template<typename T, typename Deleter, typename T2, typename Deleter2>
+    bool operator>(const unique_ptr<T, Deleter>& lhs, const unique_ptr<T2, Deleter2>& rhs)
+    {
+        return rhs < lhs;
+    }
+
+    template<typename T, typename Deleter, typename T2, typename Deleter2>
+    bool operator>=(const unique_ptr<T, Deleter>& lhs, const unique_ptr<T2, Deleter2>& rhs)
+    {
+        return !(lhs < rhs);
+    }
+
+    template<typename T, typename Deleter>
+    bool operator==(const unique_ptr<T, Deleter>& lhs, nullptr_t)
+    {
+        return !lhs;
+    }
+
+    template<typename T, typename Deleter>
+    bool operator==(nullptr_t, const unique_ptr<T, Deleter>& rhs)
+    {
+        return !rhs;
+    }
+
+    template<typename T, typename Deleter>
+    bool operator!=(const unique_ptr<T, Deleter>& lhs, nullptr_t rhs)
+    {
+        return !(lhs == rhs);
+    }
+
+    template<typename T, typename Deleter>
+    bool operator!=(nullptr_t rhs, const unique_ptr<T, Deleter>& lhs)
+    {
+        return !(lhs == rhs);
+    }
+
+    template<typename T, typename Deleter>
+    bool operator<(const unique_ptr<T, Deleter>& lhs, nullptr_t)
+    {
+        return less<unique_ptr<T, Deleter>::pointer>()(lhs, nullptr);
+    }
+
+    template<typename T, typename Deleter>
+    bool operator<(nullptr_t, const unique_ptr<T, Deleter>& rhs)
+    {
+        return less<unique_ptr<T, Deleter>::pointer>()(nullptr, rhs);
+    }
+
+    template<typename T, typename Deleter>
+    bool operator<=(const unique_ptr<T, Deleter>& lhs, nullptr_t)
+    {
+        return !(nullptr < lhs);
+    }
+
+    template<typename T, typename Deleter>
+    bool operator<=(nullptr_t, const unique_ptr<T, Deleter>& rhs)
+    {
+        return !(rhs < nullptr);
+    }
+
+    template<typename T, typename Deleter>
+    bool operator>(const unique_ptr<T, Deleter>& lhs, nullptr_t)
+    {
+        return nullptr < lhs;
+    }
+
+    template<typename T, typename Deleter>
+    bool operator>(nullptr_t, const unique_ptr<T, Deleter>& rhs)
+    {
+        return rhs < nullptr;
+    }
+
+    template<typename T, typename Deleter>
+    bool operator>=(const unique_ptr<T, Deleter>& lhs, nullptr_t)
+    {
+        return !(lhs < nullptr);
+    }
+
+    template<typename T, typename Deleter>
+    bool operator>=(nullptr_t, const unique_ptr<T, Deleter>& rhs)
+    {
+        return !(nullptr < rhs);
+    }
 }
 
 #endif // ASTD_MEMORY

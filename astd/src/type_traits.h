@@ -500,6 +500,49 @@ namespace astd
     {
         return static_cast<remove_reference_t<T>&&>(object);
     }
+
+    template<typename...>
+    struct common_type;
+
+    template<>
+    struct common_type<>
+    {};
+
+    template<typename T>
+    struct common_type<T> : common_type<T, T>
+    {};
+
+    template<typename T, typename U>
+    using _conditional_type = decltype(false ? declval<T>() : declval<U>());
+
+    template<typename T, typename U, typename = void>
+    struct _common_type_2_impl
+    {};
+
+    template<typename T, typename U>
+    struct _common_type_2_impl<T, U, void_t<_conditional_type<T, U>>>
+    {
+        using type = decay_t<_conditional_type<T, U>>;
+    };
+
+    template<typename T, typename U>
+    struct common_type<T, U> : _common_type_2_impl<decay_t<T>, decay_t<U>>
+    {};
+
+    template<typename _void, typename T, typename U, typename... Vs>
+    struct _common_type_3_impl
+    {};
+
+    template<typename T, typename U, typename... Vs>
+    struct _common_type_3_impl<void_t<typename common_type<T,U>::type>, T, U, Vs...> : common_type<typename common_type<T,U>::type, Vs...>
+    {};
+
+    template<typename T, typename U, typename... Vs>
+    struct common_type<T, U, Vs...> : _common_type_3_impl<void, T, U, Vs...>
+    {};
+
+    template<typename... Ts>
+    using common_type_t = typename common_type<Ts...>::type;
 }
 
 #endif // ASTD_TYPETRAITS
